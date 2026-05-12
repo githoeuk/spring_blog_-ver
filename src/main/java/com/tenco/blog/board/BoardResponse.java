@@ -1,8 +1,11 @@
 package com.tenco.blog.board;
 
-import com.tenco.blog.user.User;
 import com.tenco.blog.util.MyDateUtil;
 import lombok.Data;
+import org.springframework.data.domain.Page;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 게시글 응답 DTO
@@ -50,7 +53,7 @@ public class BoardResponse {
             this.id = board.getId();
             this.title = board.getTitle();
             this.content = board.getContent();
-            if(board.getUser() != null) {
+            if (board.getUser() != null) {
                 this.username = board.getUser().getUsername();
                 this.userId = board.getUser().getId();
             }
@@ -58,7 +61,7 @@ public class BoardResponse {
 
         // 소유자 확인
         public boolean checkIsOwner(Integer sessionUserId) {
-            if(sessionUserId == null) {
+            if (sessionUserId == null) {
                 return false;
             }
             if (sessionUserId.equals(this.userId)) {
@@ -69,5 +72,72 @@ public class BoardResponse {
         }
 
     } // end of DetailDTO inner class
+
+
+    // 페이징 DTO 설계
+    // Page<Board> page -> 우리가 사용할 DTO 클래스로 변환 및  편의 기능 추가
+    @Data
+    public static class PageDTO {
+        private List<ListDTO> list;
+        private int currentPage;
+        private int size;
+        private int totalPages;
+        private long totalElements;
+        private boolean first;
+        private boolean last;
+        private int prevPage;
+        private int nextPage;
+        private List<PageItem> pageItemNumbers;
+
+        public PageDTO(Page<Board> page) {
+            // List<Board> --> List<ListDTO> 형태로 변환
+            this.list = page.getContent().stream()
+                    .map(board -> new ListDTO(board))
+                    .toList();
+            // page.getNumber() <-- 0번부터 시작
+            // 하지만 화면에서는 1부터 표시해야 됨 -> page.getNumber() + 1 -> this.currentPage
+            this.currentPage = page.getNumber() + 1;
+            this.size = page.getSize(); // 현재 default값은 2
+            this.totalPages = page.getTotalPages();
+            this.totalElements = page.getTotalElements(); // totalElements - long으로 설계
+            this.first = page.isFirst();
+            this.last = page.isLast();
+
+            // 이전 / 다음 페이지 번호 (템플릿은 계산 불가 -> 여기서 처리해야 하낟)
+            this.prevPage = this.first ? this.currentPage : this.currentPage - 1;
+            this.nextPage = this.last ? this.currentPage : this.currentPage + 1;
+
+            // 페이지 번호 윈도우 : 현재 페이지기준 앞뒤 2페이지 (최대 5개)
+            // 노출되는 페이지 번호 개수
+            // ex1 : 현재 페이지 5 ---> [ 3 , 4 , 5 , 6 , 7]
+            // ex2 : 현재 페이지 1 ---> [ 1, 2 ,3 ]
+            int start = Math.max(1, this.currentPage - 2);
+            // ex3 : 현재 페이지 5 --> [3, 4 , 5]
+            int end = Math.min(this.totalPages, this.currentPage + 2);
+
+
+            // 1. 빈 List 객체 생성 후 값 할당.
+            this.pageItemNumbers = new ArrayList<>();
+            for (int i = start; i <= end; i++){
+                boolean isActive = (i == this.currentPage);
+                this.pageItemNumbers.add(new PageItem(i,isActive));
+            }
+        }
+
+
+    } // end of PageDTO
+
+    // 현재 페이지 위치
+    @Data
+    public static class PageItem {
+        private int number; //
+        private boolean active;
+
+        public PageItem(int number, boolean active) {
+            this.number = number;
+            this.active = active;
+        }
+    }
+
 
 } // end of outer class

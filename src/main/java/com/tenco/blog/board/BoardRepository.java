@@ -1,5 +1,8 @@
 package com.tenco.blog.board;
 
+import lombok.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,5 +39,16 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
     List<Board> findAllJoinUser();
 
     // 3. 데이터 수정은 더티 체킹으로 처리
+
+    // 4. 전체 게시글 조회 + 페이징 처리
+    @Query(value = """
+        SELECT DISTINCT b FROM Board b JOIN FETCH b.user ORDER BY b.createdAt DESC
+    """,
+            // 성능 저하 방지
+            countQuery = """
+            SELECT count(DISTINCT b) FROM Board b
+            """)
+    Page<Board> findAllWithUserOrderByCreatedAtDesc(Pageable pageable);
+
 }
 

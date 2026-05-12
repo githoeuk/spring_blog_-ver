@@ -8,10 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -52,15 +49,31 @@ public class BoardController {
      * 게시글 목록 화면 요청
      * 주소설계 : http://localhost:8080/
      */
-    @GetMapping({"/", "index"})
-    public String list(Model model) {
-        List<BoardResponse.ListDTO> boardList = boardService.게시글목록();
-        // OSIV 개념을 false 설정했기 때문에 여기서 LAZY 요청을 하면 터져 버린다.
-        ///boardList.get(0).getUser().getUsername();
+    // 페이징 처리 주소 설계 : http://localhost:8080/?page=1&size=2
+    // @RequestParam(name="page",defaultValue = "") 매개변수로 들어가면서 필수 값 처리를 해야한다.
+    @GetMapping({"/board/list","/"})
+    public String list(Model model,
+                       @RequestParam(name = "page",defaultValue = "1")Integer page,
+                       @RequestParam(name = "size",defaultValue = "5")Integer size
+                       ) {
 
-        model.addAttribute("boardList", boardList);
+        System.out.println("page : " + page);
+        System.out.println("size : " + size);
+
+        BoardResponse.PageDTO boardPage = boardService.게시글목록(page,size);
+        model.addAttribute("boardPage", boardPage);
         return "board/list";
     }
+
+//    @GetMapping({"/", "index"})
+//    public String list(Model model) {
+//        List<BoardResponse.ListDTO> boardList = boardService.게시글목록();
+//        // OSIV 개념을 false 설정했기 때문에 여기서 LAZY 요청을 하면 터져 버린다.
+//        ///boardList.get(0).getUser().getUsername();
+//
+//        model.addAttribute("boardList", boardList);
+//        return "board/list";
+//    }
 
     // 게시글 상세보기 화면 요청
     // http://localhost:8080/board/1

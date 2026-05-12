@@ -1,32 +1,37 @@
 {{> layout/header}}
 <div class="container p-5 flex-grow-1">
-    {{#boardList}}
+    {{#boardPage.list}} {{! boardPage에 있는 값들이 이제 반영된다.}}
         <div class="card mb-3">
             <div class="card-body">
                 <h4 class="card-title mb-3">{{title}}</h4>
                 <!--  머스태치 문법은 getter 메서드를 가지고 오고 get은 탈락 가능 -->
-<<<<<<< HEAD
-                <div> 작성자 : {{username}} | 작성일 : {{createdAt}}</div>
-=======
-                <div> 작성자 : {{username}}| 작성일 : {{createdAt}}</div>
->>>>>>> 2cb0b8792dd561447b28c1adaf9077d706058714
+
+                <div> 작성자 : {{username}}  | 작성일 : {{createdAt}}</div>
+
                 <a href="/board/{{id}}" class="btn btn-primary">상세보기</a>
             </div>
         </div>
-    {{/boardList}}
+    {{/boardPage.list}}
 
-<<<<<<< HEAD
-    <ul class="pagination">
-        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-        <li class="page-item"><a class="page-link" href="#">1</a></li>
-        <li class="page-item active"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item"><a class="page-link" href="#">Next</a></li>
-=======
+
+    <!-- 페이지 네비게이션 시작 -->
     <ul class="pagination d-flex justify-content-center">
-        <li class="page-item"><a href="" class="page-link">Previous</a></li>
-        <li class="page-item"><a href="" class="page-link"> Next</a></li>
->>>>>>> 2cb0b8792dd561447b28c1adaf9077d706058714
+        <!-- 이전 페이지 버튼 (첫 페이지 일 시 disabled 처리 -->
+        <li class="page-item {{#boardPage.first}} disabled {{/boardPage.first}}">
+            <a class="page-link " href="/?page={{boardPage.prevPage}}&size={{boardPage.size}}">Previous</a>
+        </li>
+
+        <!-- 페이지 번호 윈도우 (현제 페이지 기준 앞뒤 2페이지 최대 5개 -->
+        {{#boardPage.pageItemNumbers}}
+            <li class="page-item {{#active}}active{{/active}}">
+            <a class="page-link" href="/?page={{number}}&size={{boardPage.size}}">{{number}}</a>
+        </li>
+        {{/boardPage.pageItemNumbers}}
+
+        <li class="page-item {{#boardPage.last}} disabled {{/boardPage.last}}">
+            <a class="page-link" href="/?page={{boardPage.nextPage}}&size={{boardPage.size}}">Next</a>
+        </li>
+
     </ul>
 </div>
 

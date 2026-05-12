@@ -52,6 +52,9 @@ public class BoardRequest {
             }
         }
 
-    }
+    } // end of UpdateDTO
+
+
+
 
 }
