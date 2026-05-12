@@ -1,0 +1,20 @@
+{{> layout/header}}
+<div class="container p-5 flex-grow-1">
+    {{#boardList}}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h4 class="card-title mb-3">{{title}}</h4>
+                <!--  머스태치 문법은 getter 메서드를 가지고 오고 get은 탈락 가능 -->
+                <div> 작성자 : {{username}}| 작성일 : {{createdAt}}</div>
+                <a href="/board/{{id}}" class="btn btn-primary">상세보기</a>
+            </div>
+        </div>
+    {{/boardList}}
+
+    <ul class="pagination d-flex justify-content-center">
+        <li class="page-item"><a href="" class="page-link">Previous</a></li>
+        <li class="page-item"><a href="" class="page-link"> Next</a></li>
+    </ul>
+</div>
+
+{{> layout/footer}}
