@@ -28,27 +28,46 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
     // 단건 조회
     // 1. 게시글 ID로 조회시 사용자 정보도 함께 가져오기
     @Query("""
-            SELECT b FROM Board b JOIN FETCH b.user WHERE b.id = :id
-           """)
+             SELECT b FROM Board b JOIN FETCH b.user WHERE b.id = :id
+            """)
     Optional<Board> findByIdJoinUser(@Param("id") Integer id);
 
     // 2. 전체 게시글 조회 (단 한번에 작성자 정보도 조회)
     @Query("""
-    SELECT b FROM Board b JOIN FETCH b.user ORDER BY b.id DESC
-    """)
+            SELECT b FROM Board b JOIN FETCH b.user ORDER BY b.id DESC
+            """)
     List<Board> findAllJoinUser();
 
     // 3. 데이터 수정은 더티 체킹으로 처리
 
     // 4. 전체 게시글 조회 + 페이징 처리
     @Query(value = """
-        SELECT DISTINCT b FROM Board b JOIN FETCH b.user ORDER BY b.createdAt DESC
-    """,
+                SELECT DISTINCT b FROM Board b JOIN FETCH b.user ORDER BY b.createdAt DESC
+            """,
             // 성능 저하 방지
             countQuery = """
-            SELECT count(DISTINCT b) FROM Board b
-            """)
+                    SELECT count(DISTINCT b) FROM Board b
+                    """)
     Page<Board> findAllWithUserOrderByCreatedAtDesc(Pageable pageable);
 
-}
+    // 5. 전체 게시글 조회 + 페이징 처리 + LIKE 검색
+    @Query(value = """
+                SELECT DISTINCT b
+                FROM Board b
+                JOIN FETCH b.user
+                WHERE LOWER(b.title) LIKE LOWER( CONCAT ( '%' , :keyword ,'%'))
+                    OR LOWER(b.content) LIKE LOWER( CONCAT ( '%' , :keyword ,'%'))
+                ORDER BY b.createdAt DESC
+            """,
+            // 성능 저하 방지
+            countQuery = """
+                    SELECT COUNT(DISTINCT b)
+                    FROM Board b
+                    WHERE LOWER(b.title) LIKE LOWER( CONCAT ( '%' , :keyword ,'%'))
+                        OR LOWER(b.content) LIKE LOWER( CONCAT ( '%' , :keyword ,'%'))
+                    """)
+    Page<Board> findByTitleContainingOrContentContaining(@Param("keyword") String keyword, Pageable pageable);
+
+
+} // end of interface
 

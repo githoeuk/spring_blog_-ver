@@ -43,19 +43,20 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final ReplyRepository replyRepository;
+
     /**
      * 게시글 목록 조회
      * OSIV false 환경 대응 - 응답 DTO 설계
      */
-    public BoardResponse.PageDTO 게시글목록(int page,int size) {
+    public BoardResponse.PageDTO 게시글목록(int page, int size, String keyword) {
 
         // 화면 기준에서 넘어 오는 값(page)( 사용자에게 보여지는 기준) -> 0이 아닌 1부터 시작
         // JPA 기준으로 offset은 0부터 시작이다.
 
         // page에 사용자가 음수값을 넣어도 최소값은 0으로 처리 (방어적 코드)
-        int pageIndex = Math.max(0,page - 1);
+        int pageIndex = Math.max(0, page - 1);
         //  page에 사용자가 허용값보다 큰 값을 넣을 경우 (방어적 코드)
-        int validSize = Math.max(1,Math.min(50,size));
+        int validSize = Math.max(1, Math.min(50, size));
 
         // Pageable 이란?
         // 어떤 페이지를(PageIndex) , 몇 개씩 (validSize),  어던 정렬(sort) 가져올지를
@@ -63,9 +64,9 @@ public class BoardService {
         // 즉 Repository 에 Pageable 객체를 넘기면 자동으로 limit , offset 을 만들어 준다
 
         // 정렬 - 날짜로
-        Sort sort = Sort.by(Sort.Direction.DESC,"createdAt");
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
         // 동적으로 limit과 offset처리 최신 순 기준으로 처리
-        Pageable pageable = PageRequest.of(pageIndex,validSize,sort);
+        Pageable pageable = PageRequest.of(pageIndex, validSize, sort);
 
         // Page<T> 이란?
         // 조회된 데이터 한 페이지와 페이징 관련된 메타 데이터를 한꺼번에 담는 객체이다.
@@ -74,8 +75,12 @@ public class BoardService {
         // - getTotalElements() : 전체 항목 수
         // - getTotalPage() : 전체 페이지 수
         // - isFrist()/isLast() : 첫 페이지/마지막 페이지 여부 (boolean으로 반환)
-
-        Page<Board> boardPage = boardRepository.findAllWithUserOrderByCreatedAtDesc(pageable);
+        Page<Board> boardPage;
+        if (keyword == null || keyword.isBlank()) {
+            boardPage = boardRepository.findAllWithUserOrderByCreatedAtDesc(pageable);
+        } else {
+            boardPage = boardRepository.findByTitleContainingOrContentContaining(keyword.trim(), pageable);
+        }
 
         System.out.println("-------------------------------");
         System.out.println(boardPage.getSize());
@@ -95,6 +100,7 @@ public class BoardService {
 
     /**
      * 게시글 상세 조회
+     *
      * @param id (Board PK)
      * @return DetailDTO 처리 (OSIV 대응)
      */
@@ -114,6 +120,7 @@ public class BoardService {
 
     /**
      * 게시글 작성
+     *
      * @param saveDTO
      * @param sessionUser (세션에서 가져온 사용자 정보)
      */
@@ -137,7 +144,7 @@ public class BoardService {
     public BoardResponse.DetailDTO 게시글상세화면및인가처리(Integer id, User sessionUser) {
         log.info("게시글 상세 화면 및 인가 확인");
         BoardResponse.DetailDTO detailDTO = 게시글상세조회(id);
-        if(!detailDTO.getUserId().equals(sessionUser.getId())) {
+        if (!detailDTO.getUserId().equals(sessionUser.getId())) {
             throw new Exception403("권한없음");
         }
         log.info("게시글 수정 조회 완료 - 제목: {}, 작성자: {}",
@@ -148,7 +155,8 @@ public class BoardService {
 
     /**
      * 게시글 수정 기능 처리
-     * @param id  (Board PK)
+     *
+     * @param id          (Board PK)
      * @param updateDTO
      * @param sessionUser
      * @return
@@ -168,7 +176,8 @@ public class BoardService {
 
     /**
      * 게시글 삭제 요청
-     * @param id (Board PK)
+     *
+     * @param id          (Board PK)
      * @param sessionUser
      */
     @Transactional

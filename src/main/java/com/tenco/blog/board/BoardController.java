@@ -51,17 +51,25 @@ public class BoardController {
      */
     // 페이징 처리 주소 설계 : http://localhost:8080/?page=1&size=2
     // @RequestParam(name="page",defaultValue = "") 매개변수로 들어가면서 필수 값 처리를 해야한다.
+    // required = false - 기본값 불필요
     @GetMapping({"/board/list","/"})
     public String list(Model model,
                        @RequestParam(name = "page",defaultValue = "1")Integer page,
-                       @RequestParam(name = "size",defaultValue = "5")Integer size
+                       @RequestParam(name = "size",defaultValue = "5")Integer size,
+                       @RequestParam(name = "keyword", required = false)String keyword
                        ) {
 
+
+        // 상황 - 검색 버튼을 눌렀을 경우 page, size , keyword 값 확인
         System.out.println("page : " + page);
         System.out.println("size : " + size);
+        // keyword -- null (방어적 코드 처리)
+        System.out.println("keyword : " + keyword);
 
-        BoardResponse.PageDTO boardPage = boardService.게시글목록(page,size);
+        BoardResponse.PageDTO boardPage = boardService.게시글목록(page,size, keyword);
         model.addAttribute("boardPage", boardPage);
+        model.addAttribute("keyword",keyword != null ?  keyword : "");
+        model.addAttribute("reset",keyword = null);
         return "board/list";
     }
 
