@@ -43,8 +43,9 @@ public class User {
     }
 
     // 편의 기능 추가 - 회원 정보 수정
-    public void update(UserRequest.UpdateDTO updateDTO) {
+    public void update(UserRequest.UpdateDTO updateDTO, String  newProfileImageFileName) {
         this.password = updateDTO.getPassword();
+        this.profileImage = newProfileImageFileName;
         // Dirty Checking 처리
     }
 }

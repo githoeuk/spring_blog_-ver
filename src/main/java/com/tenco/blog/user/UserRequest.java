@@ -75,6 +75,9 @@ public class UserRequest {
 
         private String password;
 
+        // 업데이트 할 사진 변수 선언 - (update-form.mustahce)
+        private MultipartFile profileImage;
+
         public void validate() {
             if(password == null || password.isBlank()) {
                 throw new IllegalArgumentException("비밀번호는 필수 입니다");
@@ -83,6 +86,7 @@ public class UserRequest {
                 throw new IllegalArgumentException("비밀번호는 4자 이상이어야 합니다");
             }
         }
-    }
 
-}
+    } // end of UpdateDTO
+
+} // end of class

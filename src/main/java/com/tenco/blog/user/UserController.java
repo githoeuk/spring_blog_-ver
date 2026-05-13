@@ -45,17 +45,24 @@ public class UserController {
         return "user/detail";
     }
 
-    // 프로필 수정 기능 요청
+    // 회원 정보 수정 기능 요청
     @PostMapping("/user/update")
     public String updateProc(UserRequest.UpdateDTO updateDTO, HttpSession session) {
+        User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
+
+        // 회원 정보 수정 요청 시 기본 비밀번호 nul 이고 프로필 이미지만 수정할 경우
+        if (updateDTO.getPassword() == null || updateDTO.getPassword().isBlank()){
+            updateDTO.setPassword(sessionUser.getPassword());
+        }
+
         updateDTO.validate();
-        User sessionUser = (User) session.getAttribute("sessionUser");
+
         User updateUser = userService.회원정보수정(sessionUser.getId(), updateDTO);
-        session.setAttribute("sessionUser", updateUser);
+        session.setAttribute(Define.SESSION_USER, updateUser);
         return "redirect:/";
     }
 
-    // 프로필 화면 요청
+    // 회원 정보 화면 요청
     @GetMapping("/user/update-form")
     public String updateFormPage(HttpSession session, Model model) {
         User sessionUser = (User) session.getAttribute("sessionUser");
@@ -102,6 +109,7 @@ public class UserController {
     @PostMapping("/join")
     public String joinProc(UserRequest.JoinDTO joinDTO) throws IOException {
         //  인증검사 x, 유효성 검사 하기 o
+
 
         joinDTO.validate();
 

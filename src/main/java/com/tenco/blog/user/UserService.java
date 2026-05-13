@@ -111,8 +111,40 @@ public class UserService {
         log.info("회원정보 서비스 시작");
         User userEntity = userRepository.findById(id).orElseThrow(
                 () -> new Exception404("사용자 정보를 찾을 수 없습니다"));
+
+
+
+        String uuidImageFileName = null;
+        // 1. 파일이 들어왔는지  파일 이름으로 확인
+        if (updateDTO.getProfileImage() != null && !updateDTO.getProfileImage().isEmpty()){
+            try {
+                // 2.1 기존 프로필 사진이 존재하는지
+                String oldProfileImage = userEntity.getProfileImage(); // null or 기존이미지명
+                // String newProfileImage = updateDTO.getProfileImage().getOriginalFilename(); //
+
+                // 2.2 이미지 파일이 들어왔는지 확인 ,
+                if (!FileUtil.isImageFile(updateDTO.getProfileImage())){
+                    throw new Exception400("이미지 파일만 업로드 가능합니다.");
+                }
+
+                // 3. 정상 통과했다면 매개 변수로 파일 이름과 저장 디렉토리를 넣어서 FileUtil.saveFile 실행
+                uuidImageFileName = FileUtil.saveFile(updateDTO.getProfileImage(),FileUtil.IMAGES_DIR);
+
+                // 기존 이미지  삭제 처리(있을 시)
+                if (oldProfileImage != null){
+                    FileUtil.deleteFile(oldProfileImage,FileUtil.IMAGES_DIR);
+                }
+
+            } catch (Exception e) {
+                // 디스크 부족이나 권한이 없을 때 오류 발생
+                throw new Exception500("프로필 이미지 저장 실패 ");
+            }
+
+
+        } // end of 이미지 파일 수정
+
         // 더티 체킹 활용
-        userEntity.update(updateDTO);
+        userEntity.update(updateDTO,uuidImageFileName); // 새로운 이미지 파일명
         return userEntity;
     }
 
