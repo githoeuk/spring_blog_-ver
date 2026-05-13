@@ -39,11 +39,12 @@ spring:
 
   #      초기 데이터 설정
   # SQL 초기화 설정
-#  sql:
-#    init:
-#      mode: none  # 외부 DB(MySQL)에서도 실행되도록 설정
-#      data-locations:
-#        - classpath:db/data.sql
+  sql:
+    init:
+      #mode: always  # 외부 DB(MySQL)에서도 실행되도록 설정
+      mode: never  # 실행 불가
+      data-locations:
+        - classpath:db/data.sql
 
   jpa:
     # Open Session In View -> false 설정

@@ -15,7 +15,12 @@ public class FileUtil {
 
     // saveFile에 매개변수로 항상 주소를 입력하는건 좋지않음
     // 업로드 될 파일 경로를 미지 상수로 지정 /resources에 저장 시키도록 할 예정
-    public static final String IMAGES_DIR = "C:\\upload";
+    // System.getProperty("user.home")를 사용하여 OS 상관없이
+    // 사용자 홈 경로를 동적으로 설정한다 가져온다
+    // ex) window : C:\Users\사용자명\blog_uploads
+    // ex) Mac : /Users/사용자명/blog_uploads
+    public static final String IMAGES_DIR = Paths.get(System
+            .getProperty("user.home"),"blog_uploads").toString();
 
     // 기능
     // 1. 파일 저장 기능 String이 반환타입인 이유 - 서버 컴에 저장되어 있는 파일 위치를 반환하기 때문

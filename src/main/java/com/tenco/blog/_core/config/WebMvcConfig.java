@@ -2,12 +2,15 @@ package com.tenco.blog._core.config;
 
 import com.tenco.blog._core.interceptor.LoginInterceptor;
 import com.tenco.blog._core.interceptor.SessionInterceptor;
+import com.tenco.blog._core.util.FileUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.nio.file.Paths;
 
 // 자바 코드로 스프링 부트 설정 파일을 다둘 수 있다.
 
@@ -61,10 +64,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String externalPath = Paths.get(FileUtil.IMAGES_DIR).toString();
         registry.addResourceHandler("/images/**")
-                // 추후 - C:upload/
-                // C:\\upload
-                .addResourceLocations("file:///C:/upload/");
+                // file 추가
+                .addResourceLocations("file:" + externalPath);
     }
 } // end of class
 
