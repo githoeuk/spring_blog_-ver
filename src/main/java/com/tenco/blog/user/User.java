@@ -27,13 +27,19 @@ public class User {
     @CreationTimestamp
     private Timestamp createdAt;
 
+    // User 테이블에는 이미지 파일명만 저장할 예정 (실제 데이터는 내 서버 컴퓨터 로컬에 저장할 예정)
+    @Column(nullable = true) // null 허용, 기본값
+    private String profileImage; // 프로필 이미지는 선택 사항
+
     @Builder
-    public User(Integer id, String username, String password, String email, Timestamp createdAt) {
+    public User(Integer id, String username, String password,
+                String email, Timestamp createdAt, String profileImage) {
         this.id = id;
         this.username = username;
         this.password = password;
         this.email = email;
         this.createdAt = createdAt;
+        this.profileImage = profileImage;
     }
 
     // 편의 기능 추가 - 회원 정보 수정

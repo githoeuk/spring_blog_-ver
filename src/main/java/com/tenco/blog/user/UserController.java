@@ -8,6 +8,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.io.IOException;
+
 @Slf4j
 @Controller // IoC
 @RequiredArgsConstructor // DI 처리
@@ -70,11 +72,13 @@ public class UserController {
     // 회원 가입 기능 요청
     // 주소 설계 - http://localhost:8080/join
     @PostMapping("/join")
-    public String joinProc(UserRequest.JoinDTO joinDTO) {
+    public String joinProc(UserRequest.JoinDTO joinDTO) throws IOException {
         //  인증검사 x, 유효성 검사 하기 o
+
         joinDTO.validate();
+
         userService.회원가입(joinDTO);
         return "redirect:/login-form";
     }
 
-}
+} // end of class
