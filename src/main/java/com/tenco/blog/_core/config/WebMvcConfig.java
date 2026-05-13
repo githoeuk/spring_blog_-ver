@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 // 자바 코드로 스프링 부트 설정 파일을 다둘 수 있다.
@@ -52,6 +53,19 @@ public class WebMvcConfig implements WebMvcConfigurer {
                     "/h2-console/**"    // H2 콘솔 접근
                 );
     }
-}
+
+    // 정적 리소스 핸들러 설정
+    // 외부 사용자가 서버 컴퓨터에 특정 경로를 바로 확인 할 수 있게 한다면
+    // 보안상 취약할 수 있다.
+    // 사용자에게는  가짜 경로를 보여주고 내부에서는 실제 경로를 찾을 수 있도록 처리하는 기법(보안상)
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/images/**")
+                // 추후 - C:upload/
+                // C:\\upload
+                .addResourceLocations("file:///C:/upload/");
+    }
+} // end of class
 
 

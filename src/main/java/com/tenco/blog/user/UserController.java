@@ -17,6 +17,16 @@ public class UserController {
 
     private final UserService userService;
 
+    // 마이페이지 요청  화면
+    @GetMapping("/user/detail")
+    public String detailPage(Model model, HttpSession session){
+
+        User sessionUser= (User) session.getAttribute("sessionUser");
+        model.addAttribute("user",sessionUser);
+
+        return "user/detail";
+    }
+
     // 프로필 수정 기능 요청
     @PostMapping("/user/update")
     public String updateProc(UserRequest.UpdateDTO updateDTO, HttpSession session) {

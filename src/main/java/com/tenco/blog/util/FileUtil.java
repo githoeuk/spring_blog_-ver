@@ -15,7 +15,7 @@ public class FileUtil {
 
     // saveFile에 매개변수로 항상 주소를 입력하는건 좋지않음
     // 업로드 될 파일 경로를 미지 상수로 지정 /resources에 저장 시키도록 할 예정
-    public static final String IMAGES_DIR = "images/";
+    public static final String IMAGES_DIR = "C:\\upload";
 
     // 기능
     // 1. 파일 저장 기능 String이 반환타입인 이유 - 서버 컴에 저장되어 있는 파일 위치를 반환하기 때문
