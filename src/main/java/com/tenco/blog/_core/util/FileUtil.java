@@ -1,4 +1,4 @@
-package com.tenco.blog.util;
+package com.tenco.blog._core.util;
 
 import com.tenco.blog._core.errors.Exception400;
 import org.springframework.web.multipart.MultipartFile;
@@ -62,6 +62,18 @@ public class FileUtil {
     } // end of saveFile
 
     // 2. 파일 삭제 기능
+    public static void deleteFile(String fileName, String uploadDir) throws IOException {
+        if (fileName == null || fileName.isEmpty()){
+            return;
+        }
+        // Path -> C://upload/xxx_a.png
+        Path filePath = Paths.get(uploadDir,fileName);
+        if (Files.exists(filePath) ){
+            // 정확한 폴더 경로 존재 확인 , 파일명 기준으로 파일이 존재한다면
+            Files.delete(filePath);  // 실제 폴더에서 파일 삭제
+        }
+
+    } // end of deleteFile
 
     // 3. 편의 기능 추가 예정 (이미지 파일이 맞는지 확인)
     public static boolean isImageFile(MultipartFile file){

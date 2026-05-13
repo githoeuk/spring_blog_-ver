@@ -1,5 +1,6 @@
 package com.tenco.blog.user;
 
+import com.tenco.blog._core.util.Define;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.io.IOException;
 
+
+
+
 @Slf4j
 @Controller // IoC
 @RequiredArgsConstructor // DI 처리
@@ -17,11 +21,25 @@ public class UserController {
 
     private final UserService userService;
 
+    // 프로필 이미지 삭제 요청
+    @PostMapping("/user/profile-image/delete")
+    public String deleteProfileImage(HttpSession session){
+        // 인증 검사
+        User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
+        // 프로필 이미지 삭제
+        User updateUser = userService.프로필이미지삭제(sessionUser.getId());
+
+        // session에 저장되어 있던 프로필 이미지를 삭제한걸 세션 동기화 처리
+        session.setAttribute(Define.SESSION_USER,updateUser);
+
+        return "redirect:/user/detail";
+    }
+
     // 마이페이지 요청  화면
     @GetMapping("/user/detail")
     public String detailPage(Model model, HttpSession session){
 
-        User sessionUser= (User) session.getAttribute("sessionUser");
+        User sessionUser= (User) session.getAttribute(Define.SESSION_USER);
         model.addAttribute("user",sessionUser);
 
         return "user/detail";

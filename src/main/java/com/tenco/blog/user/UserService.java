@@ -1,13 +1,16 @@
 package com.tenco.blog.user;
 
 import com.tenco.blog._core.errors.Exception400;
+import com.tenco.blog._core.errors.Exception403;
 import com.tenco.blog._core.errors.Exception404;
 import com.tenco.blog._core.errors.Exception500;
-import com.tenco.blog.util.FileUtil;
+import com.tenco.blog._core.util.FileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
 
 /**
  * User 관련 비즈니스 로직을 처리하는 Service 계층
@@ -112,6 +115,39 @@ public class UserService {
         userEntity.update(updateDTO);
         return userEntity;
     }
+
+    @Transactional
+    public User 프로필이미지삭제(Integer id) {
+
+        // 1. 정보 조회
+
+        User userEntity =userRepository.findById(id).orElseThrow(
+                () -> new Exception404("사용자를 찾을 수 없습니다.")
+        );
+
+        // 인가 처리
+        if(userEntity.getId().equals(id) == false){
+            throw new Exception403("프로필 이미지 삭제 권한 없음");
+        }
+
+        // 3. 이미지가 등록되어 있으면 삭제처리
+        String profileImage = userEntity.getProfileImage();
+        if (profileImage != null && !profileImage.isEmpty()){
+            // 내 서버 컴퓨터에 저장된 (c:/upload) 파일 삭제
+            try {
+                FileUtil.deleteFile(profileImage,FileUtil.IMAGES_DIR);
+            } catch (IOException e) {
+                System.err.println("프로필 이미지 삭제 시 오류 발생 : " + e.getMessage() );
+            }
+        }
+
+        // UserEntity.profileImage = null 처리 ( 더티 체킹 )
+        // 1차 캐쉬에 저장된 User 정보 수정 - 트랜잭션이 종료되면 반영 (더티 체킹)
+        userEntity.setProfileImage(null);
+
+
+        return userEntity;
+    } // end of 프로필이미지삭제
 
 } // end of class
 
