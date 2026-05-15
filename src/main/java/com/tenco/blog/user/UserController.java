@@ -1,9 +1,11 @@
 package com.tenco.blog.user;
 
 import com.tenco.blog._core.util.Define;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +22,21 @@ import java.io.IOException;
 public class UserController {
 
     private final UserService userService;
+
+    // 초기 파라미터 값을 가져오는 방법
+    @Value("${oauth.kakao.client-id}")// lombok아님
+    private String kakaoClientId;
+
+    @Value("${oauth.kakao.client-secret}")
+    private String kakaoClientSecret;
+
+    // 테스트용 <-- 서버가 실행되면 한번 호출 (테스트 끝나면 삭제)
+    @PostConstruct
+    public void init(){
+        log.info("현재 적용된 클라이언트 ID 확인 : " + kakaoClientId );
+        log.info("현재 적용된 클라이언트 secret 확인 : " + kakaoClientSecret );
+    }
+
 
     // 프로필 이미지 삭제 요청
     @PostMapping("/user/profile-image/delete")
