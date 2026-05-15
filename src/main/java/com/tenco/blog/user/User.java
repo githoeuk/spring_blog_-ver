@@ -65,7 +65,8 @@ public class User {
 
     @Builder
     public User(Integer id, String username, String password,
-                String email, Timestamp createdAt, String profileImage) {
+                String email, Timestamp createdAt,
+                String profileImage) {
         this.id = id;
         this.username = username;
         this.password = password;
