@@ -11,7 +11,8 @@
                     <div class="mt-2">
                         <form action="/user/profile-image/delete" method="post">
                             <button type="submit" class="btn btn-sm btn-danger"
-                            onclick="return confirm('프로필 사진을 삭제할까요?')">프로필 사진 삭제</button>
+                                    onclick="return confirm('프로필 사진을 삭제할까요?')">프로필 사진 삭제
+                            </button>
                         </form>
                     </div>
                 {{/user.profileImage}}
@@ -31,7 +32,9 @@
 
             <div class="mb-3">
                 <label class="form-label fw-bold">이메일</label>
-                <p class="form-control-plaintext">{{user.email}}</p>
+                {{#user.email}}
+                    <p class="form-control-plaintext">{{user.email}}</p>
+                {{/user.email}}
             </div>
 
             <div class="mb-3">
@@ -40,8 +43,8 @@
             </div>
 
             <div class="mb-3">
-                <a href="/user/update-form" class="btn btn-primary" >회원정보 수정</a>
-                <a href="/board/list" class="btn btn-secondary" >게시글 목록</a>
+                <a href="/user/update-form" class="btn btn-primary">회원정보 수정</a>
+                <a href="/board/list" class="btn btn-secondary">게시글 목록</a>
             </div>
 
         </div>
