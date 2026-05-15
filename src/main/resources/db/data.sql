@@ -5,7 +5,10 @@ INSERT INTO user_tb (username, password, email, created_at) VALUES
                                                                 ('cos', '1234', 'cos@gmail.com', NOW()),
                                                                 ('hong', '1234', 'hong@naver.com', NOW()),
                                                                 ('kim', '1234', 'kim@daum.net', NOW());
-
+insert into user_role_tb(role,user_id)
+values ('ADMIN',1),('USER',1), -- 1번 유저 권한 (ADMIN ,USER 둘 다 가지고 있도록 설정
+       ('USER',2),('USER',3),
+       ('USER',4),('USER',5);
 -- 2단계: Board 테이블 데이터 (10개의 게시글)
 -- 주의: user_id는 위에서 생성된 사용자의 id를 참조
 
@@ -19,7 +22,7 @@ INSERT INTO board_tb (title, content, user_id, created_at) VALUES
 INSERT INTO board_tb (title, content, user_id, created_at) VALUES
                                                                ('Spring Boot 학습 후기', 'Spring Boot를 처음 배우면서 느낀 점들을 공유합니다. JPA가 정말 편리하네요!', 2, NOW()),
                                                                ('JPA 연관관계 정리노트', '오늘 배운 @ManyToOne, @OneToMany 연관관계에 대해 정리해봤습니다. 헷갈리는 부분이 많아요.', 2, NOW()),
-                                                               ('코딩테스트 문제 추천', '백준과 프로그래머스에서 풀어볼 만한 문제들을 추천드립니다. 알고리즘 공부 화이팅!', 2, NOW());
+                                                                  ('코딩테스트 문제 추천', '백준과 프로그래머스에서 풀어볼 만한 문제들을 추천드립니다. 알고리즘 공부 화이팅!', 2, NOW());
 
 -- cos 사용자가 작성한 게시글 (2개)
 INSERT INTO board_tb (title, content, user_id, created_at) VALUES
