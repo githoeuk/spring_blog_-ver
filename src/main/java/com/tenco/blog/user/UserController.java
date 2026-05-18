@@ -39,6 +39,7 @@ public class UserController {
 
     @Value("${tenco.key}")
     private String tencoKey;
+
     // 테스트용 <-- 서버가 실행되면 한번 호출 (테스트 끝나면 삭제)
     @PostConstruct
     public void init() {
@@ -140,7 +141,9 @@ public class UserController {
             UserRequest.JoinDTO joinDTO = new UserRequest.JoinDTO();
             joinDTO.setUsername(username);
             joinDTO.setEmail(null);
-            joinDTO.setPassword("1234");
+
+            // env에 적용한 tencoKey 사용
+            joinDTO.setPassword(tencoKey);
 
             userEntity = userService.소셜회원가입(joinDTO, profile.getProfileImageUrl());
 

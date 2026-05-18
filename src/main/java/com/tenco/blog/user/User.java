@@ -67,7 +67,7 @@ public class User {
     // DB에서는 Enum타입을 문자열로 바라보도록
     @Enumerated(EnumType.STRING)
     @Column(nullable = false) // null 허용 안함
-    @ColumnDefault("'LOCAL'") // 어노테이션으로 디폴트값 선언 방법 ( 문자열 일 경우  '' 사용ㄴ)
+    @ColumnDefault("'LOCAL'") // 어노테이션으로 디폴트값 선언 방법 ( 문자열 일 경우  '' 사용)
     private OAuthProvider oAuthProvider;
 
     @Builder

@@ -84,8 +84,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addResourceLocations("file:" + externalPath);
     }
 
-    @Bean // 개발자가 수기로 올리지않고 자동을 heap메모리에 올리는 역할 IoC
-    public PasswordEncoder passwordEncoder (){
+    @Bean // heap메모리에 개발자가 아닌 프로그램이 자동을 올려줌 IoC
+    public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
 

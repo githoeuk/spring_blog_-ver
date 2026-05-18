@@ -14,11 +14,11 @@ public class UserRequest {
 
         // 유효성 검사
         public void validate() {
-            if(username == null || username.trim().isEmpty()) {
+            if (username == null || username.trim().isEmpty()) {
                 throw new IllegalArgumentException("사용자명을 입력하세요");
             }
 
-            if(password == null || password.trim().isEmpty()) {
+            if (password == null || password.trim().isEmpty()) {
                 throw new IllegalArgumentException("비밀번호를 입력하세요");
             }
         }
@@ -33,9 +33,9 @@ public class UserRequest {
 
         // 이미지 파일 - join-form에서 바이너리데이터로 받아옴
         /**
-         *  프로필 이미지 (선택 사항, nulll 이 될 수 있음)
-         *  MultipartFile : Spring에서 제공해주고 있는 파일 업로드를 처리하기 위한 인터페이스
-         *  여러개의 이미지를 받고 싶다면 List<t>로 가능
+         * 프로필 이미지 (선택 사항, nulll 이 될 수 있음)
+         * MultipartFile : Spring에서 제공해주고 있는 파일 업로드를 처리하기 위한 인터페이스
+         * 여러개의 이미지를 받고 싶다면 List<t>로 가능
          */
         private MultipartFile profileImage;
 
@@ -55,15 +55,22 @@ public class UserRequest {
                 throw new IllegalArgumentException("사용자명은 필수 입니다");
             }
 
-            if(password == null || password.trim().isEmpty()) {
+            if (password == null || password.trim().isEmpty()) {
                 throw new IllegalArgumentException("비밀번호는 필수 입니다");
             }
 
-            if(email == null || email.trim().isEmpty()) {
-                throw new IllegalArgumentException("이메을은 필수 입니다");
+            // 비밀번호 길이 지정
+            if (password.length() < 4 || password.length() > 255) {
+                throw new Exception400("비밀번호는 최소 4글자 이상 255이하로 구성되어야 합니다.");
             }
+
+            if (email == null || email.trim().isEmpty()) {
+                throw new IllegalArgumentException("이메일은 필수 입니다");
+            }
+
+
             // 입력값 : abc@naver.com --> contains() -->   true   --> ! --> false
-            if(email.contains("@") == false) {
+            if (email.contains("@") == false) {
                 throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다");
             }
 
@@ -81,7 +88,7 @@ public class UserRequest {
 
 
         public void validate() {
-            if(password == null || password.isBlank()) {
+            if (password == null || password.isBlank()) {
                 throw new Exception400("비밀번호는 필수 입니다");
             }
             if (password.length() < 4) {
