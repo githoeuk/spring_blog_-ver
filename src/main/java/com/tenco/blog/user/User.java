@@ -80,6 +80,7 @@ public class User {
         this.email = email;
         this.createdAt = createdAt;
         this.profileImage = profileImage;
+
     }
 
     // 편의 기능 추가 - 회원 정보 수정
@@ -144,5 +145,12 @@ public class User {
         // 로컬 이미지 (서버 기준 경로)
         return "/images/" + this.profileImage;
     } // getProfilePath
+
+    // 머스태치 화면에서 사용할 편의 메서드 3
+    public boolean isLocal(){
+        // true -> 이메일 가입자를 의미함
+        return this.oAuthProvider == OAuthProvider.LOCAL;
+    } // isLocal
+
 
 } // end of class

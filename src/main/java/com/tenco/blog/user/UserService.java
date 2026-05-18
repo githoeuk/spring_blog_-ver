@@ -78,9 +78,44 @@ public class UserService {
 
         // 기본 권한 추가 (일반 사용자 )
         user.addRole(Role.USER);
+        user.setOAuthProvider(OAuthProvider.LOCAL);
 
         return userRepository.save(user);
     } // end of 회원가입
+
+    // 소셜회원가입
+    @Transactional
+    public User 소셜회원가입(UserRequest.JoinDTO joinDTO, String profileImageUrl) {
+        log.info("소셜 회원가입 서비스 시작");
+
+        // 회원가입 시 사용자 이름 중복 체크
+        userRepository.findByUsername(joinDTO.getUsername()).ifPresent(user -> {
+            log.warn("회원가입 실패 - 중복된 사용자명 : {}", user.getUsername());
+            throw new Exception400("이미 존재하는 사용자 이름입니다");
+        });
+
+
+
+        // 코드 수정
+        User user = joinDTO.toEntity(profileImageUrl);
+
+        // 암호화 처리
+        String hashPwd = passwordEncoder.encode("1234"); // 문자열로 값이 들어옴
+        // 암호화 확인
+        System.out.println("rawPwd : " + joinDTO.getPassword());
+        System.out.println("hashPwd : " + hashPwd);
+
+        user.setPassword(hashPwd);
+
+
+        // 기본 권한 추가 (일반 사용자 )
+        user.addRole(Role.USER);
+        user.setOAuthProvider(OAuthProvider.KAKAO);
+        return userRepository.save(user);
+    } // end of 회원가입
+
+
+
 
     /**
      * 로그인 처리

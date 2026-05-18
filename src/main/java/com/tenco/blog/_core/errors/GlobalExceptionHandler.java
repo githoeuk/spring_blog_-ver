@@ -124,7 +124,8 @@ public class GlobalExceptionHandler {
             request.setAttribute("msg", "관련된 데이터가 있어 삭제할 수 없습니다");
         } else {
             // 실제로는 다른 내용으로 에러페이지에 내려 줘야 함.
-            request.setAttribute("msg", "데이터베이스 제약조건 위한:" + e.getMessage());
+            request.setAttribute("msg", "데이터베이스 제약조건 위반:" );
+            System.out.println("데이터베이스 제약조건 위반 : " + e.getMessage());
         }
         return "err/500";
 

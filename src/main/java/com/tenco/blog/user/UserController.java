@@ -37,11 +37,14 @@ public class UserController {
     @Value("${oauth.kakao.client-secret}")
     private String kakaoClientSecret;
 
+    @Value("${tenco.key}")
+    private String tencoKey;
     // 테스트용 <-- 서버가 실행되면 한번 호출 (테스트 끝나면 삭제)
     @PostConstruct
     public void init() {
         log.info("현재 적용된 클라이언트 ID 확인 : " + kakaoClientId);
         log.info("현재 적용된 클라이언트 secret 확인 : " + kakaoClientSecret);
+        log.info("현재 적용된 텐코 키 확인 : " + tencoKey);
     }
 
     // 응답 값 확인하기
@@ -137,9 +140,9 @@ public class UserController {
             UserRequest.JoinDTO joinDTO = new UserRequest.JoinDTO();
             joinDTO.setUsername(username);
             joinDTO.setEmail(null);
-            joinDTO.setPassword("aaaa");
-            userEntity = userService.회원가입(joinDTO);
-            userEntity.setProfileImage(profile.getProfileImageUrl());
+            joinDTO.setPassword("1234");
+
+            userEntity = userService.소셜회원가입(joinDTO, profile.getProfileImageUrl());
 
         }
 

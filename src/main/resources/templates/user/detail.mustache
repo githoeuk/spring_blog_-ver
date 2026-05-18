@@ -8,11 +8,10 @@
                 {{#user.profileImage}}
                     <!-- 회원 가입 시 로컬 가입자 -->
 
-
-                    <img class="rounded-circle" src="/images/{{user.profileImage}}" alt="프로필이미지"
+                    <img class="rounded-circle" src="{{user.profilePath}}" alt="프로필이미지"
                          style="width:200px; height:200px">
 
-
+                    {{#user.local}}
                     <div class="mt-2">
                         <form action="/user/profile-image/delete" method="post">
                             <button type="submit" class="btn btn-sm btn-danger"
@@ -20,6 +19,8 @@
                             </button>
                         </form>
                     </div>
+                    {{/user.local}}
+
                 {{/user.profileImage}}
                 {{^user.profileImage}}
                     <div class="rounded-circle bg-secondary d-inline-flex
