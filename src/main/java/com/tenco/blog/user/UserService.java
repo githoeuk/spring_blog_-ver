@@ -55,7 +55,7 @@ public class UserService {
                     throw new Exception400("이미지 파일만 업로드 가능합니다.");
                 }
                 // 프로필 이미지 이름 저장
-               profileImageFilename = FileUtil.saveFile(joinDTO.getProfileImage(), FileUtil.IMAGES_DIR);
+                profileImageFilename = FileUtil.saveFile(joinDTO.getProfileImage(), FileUtil.IMAGES_DIR);
             } catch (Exception e) {
                 // 디스크 공간 부족 or 권한 없음 시 발생
                 throw new Exception500("프로필 이미지 저장 실패");
@@ -95,7 +95,6 @@ public class UserService {
         });
 
 
-
         // 코드 수정
         User user = joinDTO.toEntity(profileImageUrl);
 
@@ -113,8 +112,6 @@ public class UserService {
         user.setOAuthProvider(OAuthProvider.KAKAO);
         return userRepository.save(user);
     } // end of 회원가입
-
-
 
 
     /**
@@ -136,7 +133,7 @@ public class UserService {
         // 2. 암호화 된 비밀번호 검증
         // passwordEncoder.matches(평문 비밀번호, 암호화된 비밀번호)
 
-        if (! passwordEncoder.matches(loginDTO.getPassword(),userEntity.getPassword())){
+        if (!passwordEncoder.matches(loginDTO.getPassword(), userEntity.getPassword())) {
             throw new Exception400("사용자명 또는 비밀번호가 올바르지 않습니다");
         }
 
@@ -169,42 +166,59 @@ public class UserService {
     @Transactional
     public User 회원정보수정(Integer id, UserRequest.UpdateDTO updateDTO) {
         log.info("회원정보 서비스 시작");
+
+        String newPassword = null;
+        String newProfileImageFilename = null;
+
+        // 조회부터 시작
         User userEntity = userRepository.findById(id).orElseThrow(
                 () -> new Exception404("사용자 정보를 찾을 수 없습니다"));
 
+        // 인가 처리 - 권한 확인
+        if (!userEntity.getId().equals(id)) {
+            throw new Exception403("권한이 없습니다.");
+        }
 
+        // 로직 처리 1 - 사용자가 비밀번호를 입력 했을 경우 갱신
+        if (updateDTO.getPassword() != null && ! updateDTO.getPassword().isBlank()) {
+            // 유효성 검사 (위치 변경 - controller에서 service로 )
+            updateDTO.validate();
 
-        String uuidImageFileName = null;
-        // 1. 파일이 들어왔는지  파일 이름으로 확인
-        if (updateDTO.getProfileImage() != null && !updateDTO.getProfileImage().isEmpty()){
+            String rawPassword = updateDTO.getPassword();
+            updateDTO.setPassword(passwordEncoder.encode(rawPassword));
+        } else {
+            updateDTO.setPassword(null);
+        }
+
+        // 로직 처리 2 - 사용자가 새로운 이미지를 등록했을 경우
+        if (updateDTO.getProfileImage() != null && !updateDTO.getProfileImage().isEmpty()) {
             try {
-                // 2.1 기존 프로필 사진이 존재하는지
-                String oldProfileImage = userEntity.getProfileImage(); // null or 기존이미지명
-                // String newProfileImage = updateDTO.getProfileImage().getOriginalFilename(); //
 
-                // 2.2 이미지 파일이 들어왔는지 확인 ,
-                if (!FileUtil.isImageFile(updateDTO.getProfileImage())){
+                // 유효성 검사
+                if (!FileUtil.isImageFile(updateDTO.getProfileImage())) {
                     throw new Exception400("이미지 파일만 업로드 가능합니다.");
                 }
 
-                // 3. 정상 통과했다면 매개 변수로 파일 이름과 저장 디렉토리를 넣어서 FileUtil.saveFile 실행
-                uuidImageFileName = FileUtil.saveFile(updateDTO.getProfileImage(),FileUtil.IMAGES_DIR);
+                // 새이미지 로컬 폴더에 저장 ( 중복되지 않을 이미지 파일 이름을 리턴 )
+                newProfileImageFilename = FileUtil.saveFile(updateDTO.getProfileImage(), FileUtil.IMAGES_DIR);
+                updateDTO.setProfileImageFilename(newProfileImageFilename);
 
-                // 기존 이미지  삭제 처리(있을 시)
-                if (oldProfileImage != null){
-                    FileUtil.deleteFile(oldProfileImage,FileUtil.IMAGES_DIR);
+                // 기존 이미지 삭제
+                String oldProfileImageName = userEntity.getProfileImage();
+                if (oldProfileImageName != null){
+                    FileUtil.deleteFile(userEntity.getProfileImage(),FileUtil.IMAGES_DIR);
                 }
 
-            } catch (Exception e) {
-                // 디스크 부족이나 권한이 없을 때 오류 발생
-                throw new Exception500("프로필 이미지 저장 실패 ");
+            } catch (IOException e) {
+                throw new Exception400("파일 저장이 실패했습니다. ");
             }
 
+        } else {
+            updateDTO.setProfileImageFilename(userEntity.getProfileImage());
+        }
 
-        } // end of 이미지 파일 수정
-
-        // 더티 체킹 활용
-        userEntity.update(updateDTO,uuidImageFileName); // 새로운 이미지 파일명
+        // 더티체킹
+        userEntity.update(updateDTO);
         return userEntity;
     }
 
@@ -213,23 +227,23 @@ public class UserService {
 
         // 1. 정보 조회
 
-        User userEntity =userRepository.findById(id).orElseThrow(
+        User userEntity = userRepository.findById(id).orElseThrow(
                 () -> new Exception404("사용자를 찾을 수 없습니다.")
         );
 
         // 인가 처리
-        if(userEntity.getId().equals(id) == false){
+        if (userEntity.getId().equals(id) == false) {
             throw new Exception403("프로필 이미지 삭제 권한 없음");
         }
 
         // 3. 이미지가 등록되어 있으면 삭제처리
         String profileImage = userEntity.getProfileImage();
-        if (profileImage != null && !profileImage.isEmpty()){
+        if (profileImage != null && !profileImage.isEmpty()) {
             // 내 서버 컴퓨터에 저장된 (c:/upload) 파일 삭제
             try {
-                FileUtil.deleteFile(profileImage,FileUtil.IMAGES_DIR);
+                FileUtil.deleteFile(profileImage, FileUtil.IMAGES_DIR);
             } catch (IOException e) {
-                System.err.println("프로필 이미지 삭제 시 오류 발생 : " + e.getMessage() );
+                System.err.println("프로필 이미지 삭제 시 오류 발생 : " + e.getMessage());
             }
         }
 
@@ -243,7 +257,7 @@ public class UserService {
 
 
     public User 사용자이름조회(String username) {
-       return userRepository.findByUsername(username).orElse(null);
+        return userRepository.findByUsername(username).orElse(null);
     } // 사용자 이름 조회
 } // end of class
 

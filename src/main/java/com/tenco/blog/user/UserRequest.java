@@ -1,5 +1,6 @@
 package com.tenco.blog.user;
 
+import com.tenco.blog._core.errors.Exception400;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -74,16 +75,17 @@ public class UserRequest {
     public static class UpdateDTO {
 
         private String password;
-
         // 업데이트 할 사진 변수 선언 - (update-form.mustahce)
         private MultipartFile profileImage;
+        private String profileImageFilename;
+
 
         public void validate() {
             if(password == null || password.isBlank()) {
-                throw new IllegalArgumentException("비밀번호는 필수 입니다");
+                throw new Exception400("비밀번호는 필수 입니다");
             }
             if (password.length() < 4) {
-                throw new IllegalArgumentException("비밀번호는 4자 이상이어야 합니다");
+                throw new Exception400("비밀번호는 4자 이상이어야 합니다");
             }
         }
 

@@ -180,14 +180,9 @@ public class UserController {
     // 회원 정보 수정 기능 요청
     @PostMapping("/user/update")
     public String updateProc(UserRequest.UpdateDTO updateDTO, HttpSession session) {
+
+        // 회원 정보 수정 요청 시 기본 비밀번호 null 이고 프로필 이미지만 수정할 경우
         User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
-
-        // 회원 정보 수정 요청 시 기본 비밀번호 nul 이고 프로필 이미지만 수정할 경우
-        if (updateDTO.getPassword() == null || updateDTO.getPassword().isBlank()) {
-            updateDTO.setPassword(sessionUser.getPassword());
-        }
-
-        updateDTO.validate();
 
         User updateUser = userService.회원정보수정(sessionUser.getId(), updateDTO);
         session.setAttribute(Define.SESSION_USER, updateUser);
