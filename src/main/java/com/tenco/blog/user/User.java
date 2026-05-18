@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
@@ -63,6 +64,12 @@ public class User {
     @JoinColumn(name = "user_id")
     private List<UserRole> roles = new ArrayList<>();
 
+    // DB에서는 Enum타입을 문자열로 바라보도록
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false) // null 허용 안함
+    @ColumnDefault("'LOCAL'") // 어노테이션으로 디폴트값 선언 방법 ( 문자열 일 경우  '' 사용ㄴ)
+    private OAuthProvider oAuthProvider;
+
     @Builder
     public User(Integer id, String username, String password,
                 String email, Timestamp createdAt,
@@ -119,9 +126,23 @@ public class User {
         return hasRole(Role.ADMIN);
     }
 
-    // 머스태치 화면에서 사용할 편의 메서드
+    // 머스태치 화면에서 사용할 편의 메서드 1
     public String getRoleDisplay(){
         return isAdmin() ? "ADMIN" : "USER";
     }
+
+    // 머스태치 화면에서 사용할 편의 메서드 2
+    // OAuthProvider 값에 따라 경로 변수를 다르게 리턴
+    public String getProfilePath(){
+        if (this.profileImage == null){
+            return null;
+        }
+        // 이미지 경로가 http로 시작 ( 소셜 가입 )
+        if (this.profileImage.startsWith("http")){
+            return this.profileImage;
+        }
+        // 로컬 이미지 (서버 기준 경로)
+        return "/images/" + this.profileImage;
+    } // getProfilePath
 
 } // end of class

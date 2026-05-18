@@ -47,11 +47,18 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("""
          SELECT distinct u FROM User u
          LEFT JOIN FETCH  u.roles r
-         WHERE u.username = :username AND u.password = :password        
+         WHERE u.username = :username AND u.password = :password
     """)
     Optional<User> findByUsernameAndPasswordWithRoles(@Param("username") String username,
                                                       @Param("password")  String password);
 
+    // 암호화 처리 시 사용자의 이름만 받을 수 있도록 쿼리를 수정한다.
+    @Query("""
+         SELECT distinct u FROM User u
+         LEFT JOIN FETCH  u.roles r
+         WHERE u.username = :username
+    """)
+    Optional<User> findByUsernameWithRoles(@Param("username") String username);
 
 
 }

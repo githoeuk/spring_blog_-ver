@@ -7,6 +7,7 @@ import com.tenco.blog._core.errors.Exception500;
 import com.tenco.blog._core.util.FileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,9 @@ import java.io.IOException;
 public class UserService {
 
     private final UserRepository userRepository;
+
+    // DI처리 - 암호화 처리
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 회원 가입 처리
@@ -63,6 +67,15 @@ public class UserService {
         // 코드 수정
         User user = joinDTO.toEntity(profileImageFilename);
 
+        // 암호화 처리
+        String hashPwd = passwordEncoder.encode(joinDTO.getPassword()); // 문자열로 값이 들어옴
+        // 암호화 확인
+        System.out.println("rawPwd : " + joinDTO.getPassword());
+        System.out.println("hashPwd : " + hashPwd);
+
+        user.setPassword(hashPwd);
+
+
         // 기본 권한 추가 (일반 사용자 )
         user.addRole(Role.USER);
 
@@ -77,11 +90,20 @@ public class UserService {
      */
     public User 로그인(UserRequest.LoginDTO loginDTO) {
         log.info("로그인 서비스 시작");
-        User userEntity = userRepository.findByUsernameAndPasswordWithRoles(loginDTO.getUsername(), loginDTO.getPassword())
+
+        // 1. 사용자 계정 여부 확인
+        User userEntity = userRepository.findByUsernameWithRoles(loginDTO.getUsername())
                 .orElseThrow(() -> {
                     log.warn("로그인 실패 - 사용자 이름 또는 사용자 비번 잘못 입력");
                     return new Exception400("사용자명 또는 비밀번호가 올바르지 않습니다");
                 });
+
+        // 2. 암호화 된 비밀번호 검증
+        // passwordEncoder.matches(평문 비밀번호, 암호화된 비밀번호)
+
+        if (! passwordEncoder.matches(loginDTO.getPassword(),userEntity.getPassword())){
+            throw new Exception400("사용자명 또는 비밀번호가 올바르지 않습니다");
+        }
 
         return userEntity;
     }
