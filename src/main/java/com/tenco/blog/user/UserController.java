@@ -1,24 +1,17 @@
 package com.tenco.blog.user;
 
+import com.tenco.blog._core.errors.Exception401;
 import com.tenco.blog._core.util.Define;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 
@@ -30,130 +23,32 @@ public class UserController {
 
     private final UserService userService;
 
-    // 초기 파라미터 값을 가져오는 방법
-    @Value("${oauth.kakao.client-id}")// lombok아님
-    private String kakaoClientId;
-
-    @Value("${oauth.kakao.client-secret}")
-    private String kakaoClientSecret;
-
-    @Value("${tenco.key}")
-    private String tencoKey;
-
-    // 테스트용 <-- 서버가 실행되면 한번 호출 (테스트 끝나면 삭제)
-    @PostConstruct
-    public void init() {
-        log.info("현재 적용된 클라이언트 ID 확인 : " + kakaoClientId);
-        log.info("현재 적용된 클라이언트 secret 확인 : " + kakaoClientSecret);
-        log.info("현재 적용된 텐코 키 확인 : " + tencoKey);
-    }
 
     // 응답 값 확인하기
     // 1. 인가 코드 받음
 
-    // 2. 토큰 발급 요청 (JWT -> CSR)
-    // Http서버 요청 해야기 때문에
+    // 1. 동의 항목 승인 이후 카카오 인가 서버에서 인가 코드가 리다렉트 됨.
     @GetMapping("/kakao-redirect")
     public String kakaoCallback(@RequestParam(name = "code") String code, HttpSession session) {
         System.out.println("카카오 리다이렉트 값 확인 : ");
 
-        RestTemplate restTemplate1 = new RestTemplate();
+        // 외부 통신을 할 때 예외처리 권장!
+        try{
+            // 리다이렉트된 값(인가코드)을 받아 처리
+            User sessionUser  = userService.카카오소셜로그인(code);
 
-        // 헤더
-        HttpHeaders headers1 = new HttpHeaders();
-        headers1.add("Content-Type",
-                "application/x-www-form-urlencoded;charset=utf-8");
+            // 2. 우리 서버 세션에 회원 정보 저장
+            session.setAttribute(Define.SESSION_USER,sessionUser);
 
-        // 바디
-        // 1. 방식 - application/json;
-        // 2. 방식 -  application/x-www-form-urlencoded;
-        // Map 구조로 받음 - {key=value, key=value...}
-        // 장점 : URLEncoding을 알아서 해준다.
-
-        LinkedMultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap();
-        multiValueMap.add("grant_type", "authorization_code");
-        multiValueMap.add("client_id", kakaoClientId);
-        multiValueMap.add("redirect_uri", "http://localhost:8080/kakao-redirect");
-        multiValueMap.add("code", code);
-        // 최신사항 : 반드시 시크릿키 body 설정
-        multiValueMap.add("client_secret", kakaoClientSecret);
-
-
-        // 순서 중요!
-        // (바디 , 헤더) 결합 (Http 요청 메세지 구축)  구조로 삽입해줘야 함
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity(multiValueMap, headers1);
-
-        // 전송
-        ResponseEntity<UserResponse.OAuthToken> response1 =
-                restTemplate1.exchange(
-                        "https://kauth.kakao.com/oauth/token",
-                        HttpMethod.POST,
-                        request, // Http 메세지 주입
-                        UserResponse.OAuthToken.class
-                );
-
-
-        // ------------------------------------------------
-        // 발급 받은 엑세스 토큰으로 해당 사용자의 정보 요청
-        String accessToken = response1.getBody().getAccessToken(); // 토큰
-        RestTemplate restTemplate2 = new RestTemplate();
-
-        HttpHeaders headers2 = new HttpHeaders();
-        // 주의! 반드시 Bearer + "공백 한칸" + 토큰
-        headers2.add("Authorization", "Bearer " + accessToken);
-        headers2.add("Content-Type",
-                "application/x-www-form-urlencoded;charset=utf-8");
-
-        HttpEntity request2 = new HttpEntity(headers2);
-
-        // HTTP 요청 2
-        ResponseEntity<UserResponse.KakaoProfile> response2 =
-                restTemplate2.exchange(
-                        "https://kapi.kakao.com/v2/user/me",
-                        HttpMethod.POST,
-                        request2,
-                        UserResponse.KakaoProfile.class
-                );
-
-        System.out.println(response2.getStatusCode());
-        System.out.println(response2.getHeaders());
-        System.out.println(response2.getBody());
-
-        // --------------------------------------------
-
-        // 소셜 로그인 설계 방식
-        // 1. 최초 사용자라면 우리 서버에 회원 가입 처리
-        // 2. 회원 가입이 되어 잇는 소셜 로그인 사용자라면 바로 로그인 처리
-
-        // 소셜 가입자 닉네임 형태 결정 -> 난수+이름 -> 123_이름
-        UserResponse.KakaoProfile.KakaoAccount.Profile profile
-                = response2.getBody().getKakaoAccount().getProfile();
-        String username = profile.getNickname() + "_" + response2.getBody().getId();
-
-        // 추후 변경 예정
-        User userEntity = userService.사용자이름조회(username);
-
-        // 최초 사용자일 시 회원 자동 가입
-        if (userEntity == null) {
-            System.out.println("최초 사용자라고 판단 ");
-            // 우리 DB에 자동 회원가입 처리
-
-            UserRequest.JoinDTO joinDTO = new UserRequest.JoinDTO();
-            joinDTO.setUsername(username);
-            joinDTO.setEmail(null);
-
-            // env에 적용한 tencoKey 사용
-            joinDTO.setPassword(tencoKey);
-
-            userEntity = userService.소셜회원가입(joinDTO, profile.getProfileImageUrl());
-
+        } catch (Exception e) {
+            // 로그인페이지가 있는 401로 던짐
+            log.error("카카오 로그인 실패 : " + e.getMessage());
+            throw new Exception401("소셜 로그인이 실패했습니다.");
         }
 
-        // 세션 정보 저장
-        session.setAttribute(Define.SESSION_USER,userEntity);
 
-        return "redirect:/board/list";
-    }
+        return  "redirect:/";
+    } // end of kakaoCallback
 
 
     // 프로필 이미지 삭제 요청
